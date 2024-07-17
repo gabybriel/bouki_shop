@@ -1,0 +1,33 @@
+<?php
+
+return [
+
+    /*
+    |--------------------------------------------------------------------------
+    | Lignes de langue d'authentification
+    |--------------------------------------------------------------------------
+    |
+    | Les lignes de langue suivantes sont utilisées lors de l'authentification pour divers
+    | messages que nous devons afficher à l'utilisateur. Vous êtes libre de modifier
+    | ces lignes de langue selon les besoins de votre application.
+    |
+    */
+
+    'failed'   => 'Ces identifiants ne correspondent pas à nos enregistrements.',
+    'password' => 'Le mot de passe fourni est incorrect.',
+    'throttle' => 'Trop de tentatives de connexion. Veuillez réessayer dans :seconds secondes.',
+
+    // Register form
+    'register' => 'S\'inscrire',
+    'name'     => 'Nom',
+    'email'    => 'Email',
+    'password' => 'Mot de passe',
+    'confirm_password' => 'Confirmer le mot de passe',
+    'already_registered' => 'Déjà enregistré?',
+
+
+
+
+
+
+];
