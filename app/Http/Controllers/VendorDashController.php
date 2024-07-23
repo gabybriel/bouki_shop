@@ -17,6 +17,8 @@ class VendorDashController extends Controller
     {
         $vendeur = auth()->user(); // Supposons que l'utilisateur connecté est un vendeur
         $articlesVendeur = $vendeur->articles->pluck('id'); // Récupérer les IDs des articles du vendeur
+        $totalSum = 0;
+        $commissions = [];
 
         $commandes = Commande::with('cartItems')
             ->whereHas('cartItems', function ($query) use ($articlesVendeur) {
@@ -30,6 +32,7 @@ class VendorDashController extends Controller
             return $commande->cartItems->whereIn('article_id', $articlesVendeur)->sum(function ($cartItem) {
                 $commission = $cartItem->article->commission ?? 0;
                 $priceAfterCommission = $cartItem->price * (1 - $commission / 100);
+                $commissions[] = $commission;
                 return $priceAfterCommission;
             });
         }, 0);
