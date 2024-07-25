@@ -12,6 +12,7 @@ class Finance extends Model
         'somme',
         'user_id',
         'mode',
+        'phone',
         'statut'
     ];
 

@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -38,7 +39,9 @@ class VendorAllController extends Controller
     {
         $vendeur = auth()->user();
         $articlesVendeur = $vendeur->articles->pluck('id');
+        $totalSum = 0;
 
+        // Récupération des commandes contenant les articles du vendeur et ayant le statut 'Payer'
         $commandes = Commande::with('cartItems')
             ->whereHas('cartItems', function ($query) use ($articlesVendeur) {
                 $query->whereIn('article_id', $articlesVendeur);
@@ -46,10 +49,16 @@ class VendorAllController extends Controller
             ->where('statut', 'Payer')
             ->get();
 
-        $totalSum = $commandes->reduce(function ($carry, $commande) use ($articlesVendeur) {
-            $sum = $commande->cartItems->whereIn('article_id', $articlesVendeur)->sum('price');
-            return $carry + $sum;
-        }, 0);
+        // Calcul du total après soustraction des commissions
+        foreach ($commandes as $commande) {
+            foreach ($commande->cartItems as $cartItem) {
+                if (in_array($cartItem->article_id, $articlesVendeur->toArray())) {
+                    $commission = $cartItem->article->commission ?? 0;
+                    $priceAfterCommission = $cartItem->price * (1 - $cartItem->commission / 100);
+                    $totalSum += $priceAfterCommission;
+                }
+            }
+        }
 
         // Soustraction des retraits "effectués" du totalSum
         $retraitsEffectues = Finance::where('user_id', $vendeur->id)
@@ -72,9 +81,10 @@ class VendorAllController extends Controller
 
         // Crée un enregistrement de retrait avec le statut "En atente"
         $retrait = new Finance([
-            'user_id' =>$vendeur->id,
+            'user_id' => $vendeur->id,
             'somme' => $request->input('somme'),
             'mode' => $request->input('mode'),
+            'phone' => $request->input('phone'),
             'statut' => 'En attente',
         ]);
         $retrait->save();
@@ -84,9 +94,9 @@ class VendorAllController extends Controller
             $whatsappParams = [
                 'token' => 'c92f222z41n1cezp',
                 'to' => $vendeur->phone,
-                'body' => '*Votre retrait est En attente*'."\n\n".
-                'Merci de Patienter' ."\n".
-                'https://www.boukishopping.com',
+                'body' => '*Votre retrait est En attente*' . "\n\n" .
+                    'Merci de Patienter' . "\n" .
+                    'https://www.boukishopping.com',
             ];
             $whatsappUrl = 'https://api.ultramsg.com/instance71159/messages/chat';
 
@@ -112,8 +122,8 @@ class VendorAllController extends Controller
             $whatsappParams = [
                 'token' => 'c92f222z41n1cezp',
                 'to' => +'242065860906',
-                'body' => '*Vous avez un nouveau retrait en atente*'."\n\n".
-                          'https://www.boukishopping.com',
+                'body' => '*Vous avez un nouveau retrait en atente*' . "\n\n" .
+                    'https://www.boukishopping.com',
             ];
             $whatsappUrl = 'https://api.ultramsg.com/instance71159/messages/chat';
 
@@ -136,4 +146,3 @@ class VendorAllController extends Controller
         return redirect()->route('vendor-dashboard')->with('success', 'Retrait initier avec success !');
     }
 }
-

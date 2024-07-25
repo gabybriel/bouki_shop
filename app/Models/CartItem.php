@@ -15,6 +15,7 @@ class CartItem extends Model
         'commande_id',
         'quantity',
         'price',
+        'commission',
     ];
 
     public function article(): BelongsTo
@@ -32,7 +33,4 @@ class CartItem extends Model
     {
         return $this->belongsTo(User::class);
     }
-
-    
-
 }

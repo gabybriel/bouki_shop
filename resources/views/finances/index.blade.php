@@ -18,104 +18,116 @@
                     <table id="example" class="table text-nowrap mb-0 align-middle">
 
                         <thead class="text-dark fs-4" style="background-color: #eee;">
-                        <tr>
-                            <th class="border-bottom-0">
-                                <h6 class="fw-semibold mb-0">id</h6>
-                            </th>
+                            <tr>
+                                <th class="border-bottom-0">
+                                    <h6 class="fw-semibold mb-0">id</h6>
+                                </th>
 
-                            <th class="border-bottom-0">
-                                <h6 class="fw-semibold mb-0">Client</h6>
-                            </th>
-                            <th class="border-bottom-0">
-                                <h6 class="fw-semibold mb-0">Date</h6>
-                            </th>
+                                <th class="border-bottom-0">
+                                    <h6 class="fw-semibold mb-0">Client</h6>
+                                </th>
+                                <th class="border-bottom-0">
+                                    <h6 class="fw-semibold mb-0">Date</h6>
+                                </th>
 
-                            <th class="border-bottom-0">
-                                <h6 class="fw-semibold mb-0">Heure</h6>
-                            </th>
+                                <th class="border-bottom-0">
+                                    <h6 class="fw-semibold mb-0">Heure</h6>
+                                </th>
 
-                            <th class="border-bottom-0">
-                                <h6 class="fw-semibold mb-0">Mentant</h6>
-                            </th>
+                                <th class="border-bottom-0">
+                                    <h6 class="fw-semibold mb-0">Mentant</h6>
+                                </th>
 
-                            <th class="border-bottom-0">
-                                <h6 class="fw-semibold mb-0">Mode</h6>
-                            </th>
-                            <th class="border-bottom-0">
-                                <h6 class="fw-semibold mb-0">Statut</h6>
-                            </th>
+                                <th class="border-bottom-0">
+                                    <h6 class="fw-semibold mb-0">Mode</h6>
+                                </th>
+                                <th class="border-bottom-0">
+                                    <h6 class="fw-semibold mb-0">Tel</h6>
+                                </th>
+                                <th class="border-bottom-0">
+                                    <h6 class="fw-semibold mb-0">Statut</h6>
+                                </th>
 
-                            <th class="border-bottom-0">
-                                <h6 class="fw-semibold mb-0">Actions</h6>
-                            </th>
-                        </tr>
+                                <th class="border-bottom-0">
+                                    <h6 class="fw-semibold mb-0">Actions</h6>
+                                </th>
+                            </tr>
                         </thead>
                         <tbody>
 
-                        @foreach($finances as $finance)
-                            <tr>
-                                <td class="border-bottom-0">
-                                    <b>
-                                        <p> {{ $finance->id }} </p>
-                                    </b>
-                                </td>
-                                <td class="border-bottom-0">
-                                    <b>
-                                        <p> {{ $finance->user->shopname}} </p>
-                                    </b>
-                                </td>
+                            @foreach ($finances as $finance)
+                                <tr>
+                                    <td class="border-bottom-0">
+                                        <b>
+                                            <p> {{ $finance->id }} </p>
+                                        </b>
+                                    </td>
+                                    <td class="border-bottom-0">
+                                        <b>
+                                            <p> {{ $finance->user->shopname }} </p>
+                                        </b>
+                                    </td>
 
-                                <td class="border-bottom-0">
-                                    <p>
-                                        {{ $finance->created_at->format('d/m/Y') }}
+                                    <td class="border-bottom-0">
+                                        <p>
+                                            {{ $finance->created_at->format('d/m/Y') }}
 
-                                    </p>
-                                </td>
+                                        </p>
+                                    </td>
 
-                                <td class="border-bottom-0">
-                                    <p>
-                                        {{ $finance->created_at->format('H.i.s') }}
-                                    </p>
-                                </td>
-                                <td class="border-bottom-0">
-                                    <p>
-                                        {{ $finance->somme }} F CFA
-                                    </p>
-                                </td>
-                                <td class="border-bottom-0">
-                                    <p>
-                                        {{ $finance->mode }}
-                                    </p>
-                                </td>
-                                <td class="border-bottom-0">
-                                    <div class="d-flex align-items-center gap-2">
-                                    <span class=" badge <?= $finance->statut === 'En attente' ? 'bg-warning' : '' ?>
+                                    <td class="border-bottom-0">
+                                        <p>
+                                            {{ $finance->created_at->format('H.i.s') }}
+                                        </p>
+                                    </td>
+                                    <td class="border-bottom-0">
+                                        <p>
+                                            {{ $finance->somme }} F CFA
+                                        </p>
+                                    </td>
+                                    <td class="border-bottom-0">
+                                        <p>
+                                            {{ $finance->mode }}
+                                        </p>
+                                    </td>
+                                    <td class="border-bottom-0">
+                                        <p>
+                                            {{ $finance->phone }}
+                                        </p>
+                                    </td>
+                                    <td class="border-bottom-0">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span
+                                                class=" badge <?= $finance->statut === 'En attente' ? 'bg-warning' : '' ?>
                                                         <?= $finance->statut === 'Effectué' ? 'bg-success' : '' ?>
                                                         rounded-3 fw-semibold ">
-                                        {{ $finance->statut }}
-                                    </span>
-                                    </div>
-                                </td>
+                                                {{ $finance->statut }}
+                                            </span>
+                                        </div>
+                                    </td>
 
-                                <td class="border-bottom-0 text-left">
-                                    <div class="flex-right" style="display: flex; justify-content: flex-left;">
-                                        <a href="{{ route('finances.show', $finance->id) }}" class="btn btn-success btn-sm" style="margin-right: 10px;">
-                                            <i class="ti ti-eye"></i>
-                                        </a>
-                                        <a href="{{ route('finances.edit', $finance->id) }}" class="btn btn-primary btn-sm" style="margin-right: 10px;">
-                                            <i class="ti ti-edit"></i>
-                                        </a>
-                                        <form action="{{ route('finances.destroy', $finance->id) }}" method="POST">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button class="btn btn-danger btn-sm" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette finance ? ')">
-                                                <i class="ti ti-trash"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforeach
+                                    <td class="border-bottom-0 text-left">
+                                        <div class="flex-right" style="display: flex; justify-content: flex-left;">
+                                            <a href="{{ route('finances.show', $finance->id) }}"
+                                                class="btn btn-success btn-sm" style="margin-right: 10px;">
+                                                <i class="ti ti-eye"></i>
+                                            </a>
+                                            <a href="{{ route('finances.edit', $finance->id) }}"
+                                                class="btn btn-primary btn-sm" style="margin-right: 10px;">
+                                                <i class="ti ti-edit"></i>
+                                            </a>
+                                            <form action="{{ route('finances.destroy', $finance->id) }}" method="POST">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button class="btn btn-danger btn-sm"
+                                                    onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette finance ? ')">
+                                                    <i class="ti ti-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
 
                         </tbody>
                     </table>
@@ -130,12 +142,11 @@
         $(document).ready(function() {
             $('#example').DataTable({
                 "order": [
-                    [0, 'desc'] // 0 is the index of the first column (assuming it's the ID column), 'desc' for descending order
+                    [0,
+                        'desc'
+                    ] // 0 is the index of the first column (assuming it's the ID column), 'desc' for descending order
                 ]
             });
         });
     </script>
-
-
-
 @endsection

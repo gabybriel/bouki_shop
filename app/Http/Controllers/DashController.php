@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Article;
 use Illuminate\Http\Request;
 use App\Models\Commande;
 use App\Models\PostView;
+use App\Models\User;
 
 class DashController extends Controller
 {
@@ -48,7 +50,41 @@ class DashController extends Controller
         // Récupérer toutes les commandes (payées ou non)
         $commandes = Commande::all();
 
-        return view('admin-dashboard', compact('commandes', 'commandesDuJour', 'totalDuJour', 'commandesDuMois', 'totalDuMois', 'vuesDuJour', 'vuesDuMois'));
+
+        $vendeurs = User::where('is_vendor', true)->get();
+        // Récupérer les IDs des articles appartenant aux vendeurs
+        $articlesVendeur = collect();
+        foreach ($vendeurs as $vendeur) {
+            $articlesVendeur = $articlesVendeur->merge($vendeur->articles->pluck('id'));
+        }
+
+        // Initialisation des variables
+        $totalSum = 0;
+        $commission = 0;
+        $mesCommissions = 0;
+
+        // Récupération des commandes contenant les articles du vendeur et ayant le statut 'Payer'
+        $commandes = Commande::with('cartItems')
+            ->whereHas('cartItems', function ($query) use ($articlesVendeur) {
+                $query->whereIn('article_id', $articlesVendeur);
+            })
+            ->where('statut', 'Payer')
+            ->get();
+
+        // Calcul du total après soustraction des commissions
+        foreach ($commandes as $commande) {
+            foreach ($commande->cartItems as $cartItem) {
+                if (in_array($cartItem->article_id, $articlesVendeur->toArray())) {
+                    $commission = $cartItem->commission ?? 0;
+                    $priceAfterCommission = $cartItem->price * (1 - $cartItem->commission / 100);
+                    $mesCommission = $cartItem->price * ($cartItem->commission / 100);
+                    $mesCommissions += $mesCommission;
+                    $totalSum += $priceAfterCommission;
+                }
+            }
+        }
+
+        return view('admin-dashboard', compact('commandes', 'commandesDuJour', 'totalDuJour', 'commandesDuMois', 'totalDuMois', 'vuesDuJour', 'vuesDuMois', 'mesCommissions'));
     }
 
 

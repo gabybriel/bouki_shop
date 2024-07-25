@@ -59,6 +59,7 @@ class CommandeController extends Controller
         foreach (Cart::content() as $product) {
             $prix = $product->price;
             $quantite = $product->qty;
+            $commission = $product->model->commission;
             $reduction = $product->model->is_promo / 100; // Convertir en pourcentage
             $prixReduit = $product->model->is_promo ? $prix * (1 - $reduction) : $prix;
             $montantSansFrais += $prixReduit * $quantite;
@@ -98,6 +99,7 @@ class CommandeController extends Controller
                         'article_id' => $cartItem->id,
                         'quantity' => $cartItem->qty,
                         'price' => $cartItem->price,
+                        'commission' => $article->commission
                     ]);
 
                     // Envoyer la notification WhatsApp au marchand si l'article appartient à un marchand

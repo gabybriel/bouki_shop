@@ -15,11 +15,17 @@ class VendorDashController extends Controller
      */
     public function index()
     {
-        $vendeur = auth()->user(); // Supposons que l'utilisateur connecté est un vendeur
-        $articlesVendeur = $vendeur->articles->pluck('id'); // Récupérer les IDs des articles du vendeur
-        $totalSum = 0;
-        $commissions = [];
+        // Récupération de l'utilisateur connecté (supposé être un vendeur)
+        $vendeur = auth()->user();
+        // Récupération des IDs des articles appartenant au vendeur
+        $articlesVendeur = $vendeur->articles->pluck('id');
 
+        // Initialisation des variables
+        $totalSum = 0;
+        $commission = 0;
+        $mesCommissions = 0;
+
+        // Récupération des commandes contenant les articles du vendeur et ayant le statut 'Payer'
         $commandes = Commande::with('cartItems')
             ->whereHas('cartItems', function ($query) use ($articlesVendeur) {
                 $query->whereIn('article_id', $articlesVendeur);
@@ -27,42 +33,39 @@ class VendorDashController extends Controller
             ->where('statut', 'Payer')
             ->get();
 
-        // Calculer le total du jour pour le vendeur
-        $totalSum = $commandes->sum(function ($commande) use ($articlesVendeur) {
-            return $commande->cartItems->whereIn('article_id', $articlesVendeur)->sum(function ($cartItem) {
-                $commission = $cartItem->article->commission ?? 0;
-                $priceAfterCommission = $cartItem->price * (1 - $commission / 100);
-                $commissions[] = $commission;
-                return $priceAfterCommission;
-            });
-        }, 0);
+        // Calcul du total après soustraction des commissions
+        foreach ($commandes as $commande) {
+            foreach ($commande->cartItems as $cartItem) {
+                if (in_array($cartItem->article_id, $articlesVendeur->toArray())) {
+                    $commission = $cartItem->commission ?? 0;
+                    $priceAfterCommission = $cartItem->price * (1 - $cartItem->commission / 100);
+                    $totalSum += $priceAfterCommission;
+                }
+            }
+        }
 
-        // Soustraction des retraits "effectués" du totalSum
+        // Récupération du total des retraits effectués par le vendeur
         $retraitsEffectues = Finance::where('user_id', $vendeur->id)
             ->where('statut', 'Effectué')
             ->sum('somme');
 
+        // Soustraction des retraits effectués du total calculé
         $totalSum -= $retraitsEffectues;
 
-
-        // Récupérer les vues de la page d'accueil créées aujourd'hui
+        // Récupération des vues de la page d'accueil pour aujourd'hui et ce mois-ci
         $vuesDuJour = PostView::whereDate('created_at', today())
             ->where('post_id', 1) // Remplacez 1 par l'ID réel du post
             ->sum('views_count');
 
-        // Récupérer les vues de la page d'accueil créées ce mois-ci
         $vuesDuMois = PostView::whereYear('created_at', now()->year)
             ->whereMonth('created_at', now()->month)
             ->where('post_id', 1) // Remplacez 1 par l'ID réel du post
             ->sum('views_count');
 
-        // Récupérer toutes les commandes payées pour les articles du vendeur
-        $commandes = Commande::with('cartItems')->whereHas('cartItems', function ($query) use ($articlesVendeur) {
-            $query->whereIn('article_id', $articlesVendeur);
-        })->get();
-
-        return view('vendor-dashboard', compact('commandes', 'totalSum',   'vuesDuJour', 'vuesDuMois'));
+        return view('vendor-dashboard', compact('commandes', 'totalSum', 'commission', 'vuesDuJour', 'vuesDuMois', 'articlesVendeur', 'retraitsEffectues', 'mesCommissions'));
     }
+
+
 
     /**
      * Show the form for creating a new resource.
